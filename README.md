@@ -7,12 +7,13 @@ A Solidity Library for managing dynamic array of primitive types.
 ## Roadmap
 
 1. Initial Implementation (✅)
-2. Improve `shrink`
+2. TypeScript
+3. Improve `shrink`
    - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area?
    - Gas costly cheap?
-3. Use Assembly
+4. Use Assembly
    - Bounding check is accomplished by accessing array element by default. It's safe without it. Use low-level Assembly to skip it.
-4. Support types narrower than 32 bytes
+5. Support types narrower than 32 bytes
    - The architecture is not gas costly effetive for primitive types smaller than 16 bytes. Any idea? 🙄
 
 ## Description
