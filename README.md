@@ -7,7 +7,7 @@ A Solidity Library for managing dynamic array of primitive types.
 ## Roadmap
 
 1. Initial Implementation (✅)
-2. TypeScript
+2. TypeScript (✅)
 3. Improve `shrink`
    - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area?
    - Gas costly cheap?
@@ -20,7 +20,8 @@ A Solidity Library for managing dynamic array of primitive types.
 
 The goal is to build a dynamically sized array similar to [C++ std::vector](https://en.cppreference.com/w/cpp/container/vector). Storage space is expensive on Ethereum; therefore, it is important to delete items when possible.
 
-Write a Solidity library that implements “DynamicArray” with the following methods. You’ll have to fix the signatures to use the appropriate types and modifiers in Solidity. 
+Write a Solidity library that implements “DynamicArray” with the following methods. You’ll have to fix the signatures to use the appropriate types and modifiers in Solidity.
+
 - `set(array, position, value)`: overwrite position in array with value
 - `get(array, position)`: return value at position in array. Exception if position is out of bounds.
 - `push(array, value)`: add value to end of array, increase array size
@@ -32,8 +33,7 @@ Write a Solidity library that implements “DynamicArray” with the following m
 
 For example, if you push 10 values, then size == 10 and capacity == 10. If you pop 5 values, then size == 5, capacity == 10. If you try to get(array, 7) then that should raise an error because 7 exceeds the size, even though it is within the capacity.
 
-For inspiration, take a look at [`EnumerableMap`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableMap.sol) and [`EnumerableSet`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol) from OpenZeppelin. Notice they use bytes32 as the underlying storage type, but expose type-specific functions for uint256 and address. 
-
+For inspiration, take a look at [`EnumerableMap`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableMap.sol) and [`EnumerableSet`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol) from OpenZeppelin. Notice they use bytes32 as the underlying storage type, but expose type-specific functions for uint256 and address.
 
 ## Usage
 
@@ -82,6 +82,7 @@ contract AddressBook {
     book.shrink();
   }
 }
+
 ```
 
 ## Development

@@ -1,14 +1,17 @@
-const { expectEvent, expectRevert, BN } = require("@openzeppelin/test-helpers");
-const { expect } = require("chai");
+import { expect } from "chai";
+import { Contract } from "ethers";
+import { ethers, web3 } from "hardhat";
 
-const DynamicBytes32ArrayMock = artifacts.require("DynamicBytes32ArrayMock");
-const DynamicUintArrayMock = artifacts.require("DynamicUintArrayMock");
-const DynamicAddressArrayMock = artifacts.require("DynamicAddressArrayMock");
+type MockArray = {
+  length: number;
+  capacity: number;
+  items: string[];
+};
 
-function shouldBehaveLikeDynamicArray(values) {
-  async function expectArrayMatch(array, { length, capacity, items }) {
-    expect(await array.size()).to.be.bignumber.equal(new BN(length));
-    expect(await array.capacity()).to.be.bignumber.equal(new BN(capacity));
+function shouldBehaveLikeDynamicArray(values: string[]) {
+  async function expectArrayMatch(array: Contract, { length, capacity, items }: MockArray) {
+    expect(await array.size()).to.be.equal(length);
+    expect(await array.capacity()).to.be.equal(capacity);
     expect(
       (await Promise.all(Array.from(Array(length)).map((_, i) => array.get(i)))).map((item) => item.toString().toLowerCase()),
     ).to.deep.equal(items);
@@ -24,7 +27,7 @@ function shouldBehaveLikeDynamicArray(values) {
 
   describe("set", function () {
     it("reverts when setting at invalid position", async function () {
-      await expectRevert.unspecified(this.array.set(0, values[0]));
+      await expect(this.array.set(0, values[0])).to.be.reverted;
     });
 
     it("overwrites an existing position", async function () {
@@ -34,8 +37,7 @@ function shouldBehaveLikeDynamicArray(values) {
         capacity: 1,
         items: [values[0]],
       });
-      const result = await this.array.set(0, values[1]);
-      expect(result.receipt.status).to.be.equal(true);
+      await this.array.set(0, values[1]);
       await expectArrayMatch(this.array, {
         length: 1,
         capacity: 1,
@@ -46,7 +48,7 @@ function shouldBehaveLikeDynamicArray(values) {
 
   describe("get", function () {
     it("reverts when getting at invalid position", async function () {
-      await expectRevert.unspecified(this.array.get(0));
+      await expect(this.array.get(0)).to.be.reverted;
     });
 
     it("gets an existing position", async function () {
@@ -92,7 +94,7 @@ function shouldBehaveLikeDynamicArray(values) {
     });
 
     it("reverts when popping in empty", async function () {
-      await expectRevert.unspecified(this.array.pop());
+      await expect(this.array.pop()).to.be.reverted;
     });
   });
 
@@ -167,29 +169,38 @@ function shouldBehaveLikeDynamicArray(values) {
   });
 }
 
-contract("DynamicArray", function (accounts) {
+describe("DynamicArray", function () {
   // Bytes32Array
-  describe("DynamicBytes32Array", function () {
+  context("DynamicBytes32Array", function () {
     beforeEach(async function () {
-      this.array = await DynamicBytes32ArrayMock.new();
+      const factory = await ethers.getContractFactory("DynamicBytes32ArrayMock");
+      const array = await factory.deploy();
+      await array.deployed();
+      this.array = array;
     });
 
     shouldBehaveLikeDynamicArray([web3.utils.randomHex(32), web3.utils.randomHex(32), web3.utils.randomHex(32)]);
   });
 
   // UintArray
-  describe("DynamicUintArray", function () {
+  context("DynamicUintArray", function () {
     beforeEach(async function () {
-      this.array = await DynamicUintArrayMock.new();
+      const factory = await ethers.getContractFactory("DynamicUintArrayMock");
+      const array = await factory.deploy();
+      await array.deployed();
+      this.array = array;
     });
 
     shouldBehaveLikeDynamicArray(["123", "456", "789"]);
   });
 
   // AddressArray
-  describe("DynamicAddressArray", function () {
+  context("DynamicAddressArray", function () {
     beforeEach(async function () {
-      this.array = await DynamicAddressArrayMock.new();
+      const factory = await ethers.getContractFactory("DynamicAddressArrayMock");
+      const array = await factory.deploy();
+      await array.deployed();
+      this.array = array;
     });
 
     shouldBehaveLikeDynamicArray([web3.utils.randomHex(20), web3.utils.randomHex(20), web3.utils.randomHex(20)]);
