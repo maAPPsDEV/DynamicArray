@@ -9,7 +9,7 @@ A Solidity Library for managing dynamic array of primitive types.
 1. Initial Implementation (✅)
 2. TypeScript (✅)
 3. Improve `shrink`
-   - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area?
+   - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area?  (✅)
    - Gas costly cheap?
 4. Use Assembly
    - Bounding check is accomplished by accessing array element by default. It's safe without it. Use low-level Assembly to skip it.
