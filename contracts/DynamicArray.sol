@@ -22,8 +22,8 @@ library DynamicArray {
     // The representative size of the array.
     uint256 _length;
     // The storage of array data. The length of storage may be different with above one.
-    // The length of data is always greater than or equal.
-    // The length is the capacity of array.
+    // The length of data is always greater than or equal above one.
+    // The length of data is the capacity of array.
     bytes32[] _data;
   }
 
