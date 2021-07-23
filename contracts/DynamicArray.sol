@@ -117,7 +117,7 @@ library DynamicArray {
     uint256 occupied = array._data.length - length;
     if (occupied == 0) return;
     for (uint256 i = 0; i < occupied; ++i) {
-      array._data.pop();
+      array._data.pop(); // array.pop() will delete the storage slot implicitly, thus it refunds gas to caller.
     }
   }
 
