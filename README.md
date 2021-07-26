@@ -11,7 +11,7 @@ A Solidity Library for managing dynamic array of primitive types.
 3. Improve `shrink`
    - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area? (✅)
       - `delete a;` will set all it's elements as well as `a.length` to 0, when `a` is a dynamic/static array on storage. (**Update**: No gas refund since [London hardfork](https://eips.ethereum.org/EIPS/eip-3298))
-      - `a.length = 0;` will only set the length of `a`. For static array, length is immutable. Further, since v0.8, `a.length` is read-only, thus you need to use `assembly` to resize the array.
+      - `a.length = 0;` will only set the length of `a`. For static array, length is immutable. Further, since v0.6, `a.length` is read-only, thus you need to use `assembly` to resize the array.
    - Gas costly cheap?
 4. Use Assembly
    - Bounding check is accomplished by accessing array element by default. It's safe without it. Use low-level Assembly to skip it. (✅)
