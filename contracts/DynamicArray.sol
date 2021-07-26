@@ -150,7 +150,7 @@ library DynamicArray {
         let slot := add(offset_, sub(index_, 1))
         sstore(slot, 0)
       }
-      sstore(data_, index_)
+      sstore(data_, index_) // update capacity
     }
   }
 
