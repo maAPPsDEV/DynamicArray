@@ -38,8 +38,8 @@ contract DynamicBytes32ArrayMock {
     _array.clear();
   }
 
-  function shrink() public {
-    _array.shrink();
+  function shrink(uint256 gasTolerance) public {
+    _array.shrink(gasTolerance);
   }
 }
 
@@ -77,8 +77,8 @@ contract DynamicUintArrayMock {
     _array.clear();
   }
 
-  function shrink() public {
-    _array.shrink();
+  function shrink(uint256 gasTolerance) public {
+    _array.shrink(gasTolerance);
   }
 }
 
@@ -116,7 +116,7 @@ contract DynamicAddressArrayMock {
     _array.clear();
   }
 
-  function shrink() public {
-    _array.shrink();
+  function shrink(uint256 gasTolerance) public {
+    _array.shrink(gasTolerance);
   }
 }
