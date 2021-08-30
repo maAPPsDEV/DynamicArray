@@ -39,6 +39,6 @@ contract AddressBook {
 
   function deleteBook() external {
     book.clear();
-    book.shrink();
+    book.shrink(0);
   }
 }

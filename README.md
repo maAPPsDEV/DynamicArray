@@ -9,10 +9,12 @@ A Solidity Library for managing dynamic array of primitive types.
 1. Initial Implementation (✅)
 2. TypeScript (✅)
 3. Improve `shrink`
-   - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area?  (✅)
+   - Confirm: modifying `length` of dynamic array on storage will/won't erase stale area? (✅)
+      - `delete a;` will set all it's elements as well as `a.length` to 0, when `a` is a dynamic/static array on storage. (**Update**: No gas refund since [London hardfork](https://eips.ethereum.org/EIPS/eip-3298))
+      - `a.length = 0;` will only set the length of `a`. For static array, length is immutable. Further, since v0.6, `a.length` is read-only, thus you need to use `assembly` to resize the array.
    - Gas costly cheap?
 4. Use Assembly
-   - Bounding check is accomplished by accessing array element by default. It's safe without it. Use low-level Assembly to skip it.
+   - Bounding check is accomplished by accessing array element by default. It's safe without it. Use low-level Assembly to skip it. (✅)
 5. Support types narrower than 32 bytes
    - The architecture is not gas costly effetive for primitive types smaller than 16 bytes. Any idea? 🙄
 
@@ -79,7 +81,7 @@ contract AddressBook {
 
   function deleteBook() external {
     book.clear();
-    book.shrink();
+    book.shrink(0);
   }
 }
 
@@ -100,18 +102,42 @@ npx hardhat test
 ```
 
 ```
-  Contract: DynamicArray
     DynamicBytes32Array
       √ starts empty
       set
-        √ reverts when setting at invalid position (54ms)
-        √ overwrites an existing position (63ms)
+        √ reverts when setting at invalid position
+        √ overwrites an existing position (72ms)
+      get
+        √ reverts when getting at invalid position
+        √ gets an existing position
+      push
+        √ adds at end (41ms)
+        √ adds at end but doesn't occupy new storage when it's been occupied already (80ms)
+      pop
+        √ removes at end and doesn't delete storage
+        √ reverts when popping in empty
+      size
+        √ returns size
+        √ may be different with capacity
+      capacity
+        √ returns capacity
+        √ may be different with size
+      clear
+        √ sets the size to 0, and doesn't delete storage
+      shrink
+        √ deletes stale storage (97ms)
+        √ fails to delete stale storage when insufficient gas limit provided, but not reverts (97ms)
+    DynamicUintArray
+      √ starts empty
+      set
+        √ reverts when setting at invalid position
+        √ overwrites an existing position (52ms)
       get
         √ reverts when getting at invalid position
         √ gets an existing position
       push
         √ adds at end (38ms)
-        √ adds at end but doesn't occupy new storage when it's been occupied already (53ms)
+        √ adds at end but doesn't occupy new storage when it's been occupied already (80ms)
       pop
         √ removes at end and doesn't delete storage
         √ reverts when popping in empty
@@ -124,42 +150,19 @@ npx hardhat test
       clear
         √ sets the size to 0, and doesn't delete storage
       shrink
-        √ deletes stale storage (61ms)
-    DynamicUintArray
-      √ starts empty
-      set
-        √ reverts when setting at invalid position
-        √ overwrites an existing position
-      get
-        √ reverts when getting at invalid position
-        √ gets an existing position
-      push
-        √ adds at end
-        √ adds at end but doesn't occupy new storage when it's been occupied already (43ms)
-      pop
-        √ removes at end and doesn't delete storage
-        √ reverts when popping in empty
-      size
-        √ returns size
-        √ may be different with capacity
-      capacity
-        √ returns capacity
-        √ may be different with size
-      clear
-        √ sets the size to 0, and doesn't delete storage
-      shrink
-        √ deletes stale storage (49ms)
+        √ deletes stale storage (98ms)
+        √ fails to delete stale storage when insufficient gas limit provided, but not reverts (97ms)
     DynamicAddressArray
       √ starts empty
       set
         √ reverts when setting at invalid position
-        √ overwrites an existing position
+        √ overwrites an existing position (42ms)
       get
         √ reverts when getting at invalid position
         √ gets an existing position
       push
-        √ adds at end
-        √ adds at end but doesn't occupy new storage when it's been occupied already (44ms)
+        √ adds at end (39ms)
+        √ adds at end but doesn't occupy new storage when it's been occupied already (81ms)
       pop
         √ removes at end and doesn't delete storage
         √ reverts when popping in empty
@@ -172,8 +175,9 @@ npx hardhat test
       clear
         √ sets the size to 0, and doesn't delete storage
       shrink
-        √ deletes stale storage (50ms)
+        √ deletes stale storage (97ms)
+        √ fails to delete stale storage when insufficient gas limit provided, but not reverts (96ms)
 
 
-  45 passing (2s)
+  48 passing (4s)
 ```

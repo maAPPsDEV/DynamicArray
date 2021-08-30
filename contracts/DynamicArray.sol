@@ -109,15 +109,48 @@ library DynamicArray {
   }
 
   /**
-   * @dev Deletes stale items.
+   * @dev Deletes stale items as many as sufficient gas is available.
    * This is the only time data is deleted on storage.
    */
-  function _shrink(Array storage array) private {
-    uint256 length = array._length; // gas saving
-    uint256 occupied = array._data.length - length;
-    if (occupied == 0) return;
-    for (uint256 i = 0; i < occupied; ++i) {
-      array._data.pop(); // array.pop() will delete the storage slot implicitly, thus it refunds gas to caller.
+  function _shrink(Array storage array, uint256 gasTolerance) private {
+    assembly {
+      let length_ := sload(array.slot)
+      let data_ := add(array.slot, 0x01)
+      let capacity_ := sload(data_)
+      let occupied_ := sub(capacity_, length_) // never underflow
+      if eq(occupied_, 0) {
+        return(0, 0)
+      }
+      if gt(
+        number(),
+        0xC5D488 /* @dev FIXME London Fork Block Number */
+      ) {
+        sstore(data_, length_)
+        /// @dev No gas refunds since London Fork, thus just returns
+        return(0, 0)
+      }
+      mstore(0, data_)
+      let offset_ := keccak256(0, 0x20) // never greater than 2**256 - 1
+      /// @notice calculating storage slot of array element can overflow, since storage has 2**256 slots.
+      /// i.e. let end := add(offset, capacity) // can be greater than 2**256 - 1 aka. overflow
+      /// Thus, it cannot use slot number as the loop iterator.
+      /// Due to the nature, seemgly inefficient loop here 🤔
+      let index_ := capacity_
+      let gasLimit_ := add(gasTolerance, 20050) /// @dev FIXME add more for gracefully end up process, ref: https://github.com/crytic/evm-opcodes
+      for {
+
+      } gt(index_, length_) {
+        index_ := sub(index_, 1)
+      } {
+        /// @dev check available remaining gas
+        if lt(gas(), gasLimit_) {
+          break
+        }
+        /// @notice Provability of overflow/underflow, but this is designed as storage is continuum.
+        let slot := add(offset_, sub(index_, 1))
+        sstore(slot, 0)
+      }
+      sstore(data_, index_) // update capacity
     }
   }
 
@@ -219,10 +252,11 @@ library DynamicArray {
    * @dev Deletes stale items.
    * This is the only time data is deleted on storage.
    *
-   * @param array     The array struct
+   * @param array         The array struct
+   * @param gasTolerance  The minimal gas amount should remain to prevent infinite loop
    */
-  function shrink(Bytes32Array storage array) internal {
-    _shrink(array._inner);
+  function shrink(Bytes32Array storage array, uint256 gasTolerance) internal {
+    _shrink(array._inner, gasTolerance);
   }
 
   // UintArray
@@ -323,10 +357,11 @@ library DynamicArray {
    * @dev Deletes stale items.
    * This is the only time data is deleted on storage.
    *
-   * @param array     The array struct
+   * @param array         The array struct
+   * @param gasTolerance  The minimal gas amount should remain to prevent infinite loop
    */
-  function shrink(UintArray storage array) internal {
-    _shrink(array._inner);
+  function shrink(UintArray storage array, uint256 gasTolerance) internal {
+    _shrink(array._inner, gasTolerance);
   }
 
   // AddressArray
@@ -427,9 +462,10 @@ library DynamicArray {
    * @dev Deletes stale items.
    * This is the only time data is deleted on storage.
    *
-   * @param array     The array struct
+   * @param array         The array struct
+   * @param gasTolerance  The minimal gas amount should remain to prevent infinite loop
    */
-  function shrink(AddressArray storage array) internal {
-    _shrink(array._inner);
+  function shrink(AddressArray storage array, uint256 gasTolerance) internal {
+    _shrink(array._inner, gasTolerance);
   }
 }

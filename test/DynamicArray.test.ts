@@ -159,10 +159,24 @@ function shouldBehaveLikeDynamicArray(values: string[]) {
       await this.array.push(values[2]);
       await this.array.pop();
       await this.array.pop();
-      await this.array.shrink();
+      await this.array.shrink(0);
       await expectArrayMatch(this.array, {
         length: 1,
         capacity: 1,
+        items: [values[0]],
+      });
+    });
+
+    it("fails to delete stale storage when insufficient gas limit provided, but not reverts", async function () {
+      await this.array.push(values[0]);
+      await this.array.push(values[1]);
+      await this.array.push(values[2]);
+      await this.array.pop();
+      await this.array.pop();
+      await this.array.shrink(100000, { gasLimit: 100000 });
+      await expectArrayMatch(this.array, {
+        length: 1,
+        capacity: 3,
         items: [values[0]],
       });
     });
